@@ -4,6 +4,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import colors from "colors";
 import connectDB from "./config/db.js";
+import userRouter from "./routes/userRoute.js";
 
 // APP
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 // ROUTES
+app.use('/api/v1/user', userRouter)
 
 // HOMEPAGE
 app.get("/", (req, res) => {
