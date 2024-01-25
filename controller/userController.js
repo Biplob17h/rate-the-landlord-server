@@ -3,11 +3,22 @@ import crypto from "crypto";
 import User from "../model/userModel.js";
 import nodemailer from "nodemailer";
 import generateToken from "../utils/token.js";
+import getUserByEmail from "../utils/getUserByEmail.js";
+import fs from "fs";
 
 const createAUser = async (req, res) => {
   try {
     // GET USER DATA
-    const { email, password } = req.body;
+    const { email, password, firstName, lastName } = req.body;
+
+    const isEmail = await getUserByEmail(email);
+
+    if (isEmail) {
+      return res.status(400).json({
+        status: "fail",
+        message: "email alredy in use",
+      });
+    }
 
     // ENCRYPT PASSWORD
     const hashPassword = (password) => {
@@ -21,15 +32,25 @@ const createAUser = async (req, res) => {
     // GENARTE TOKEN
     const token = crypto.randomBytes(32).toString("hex");
 
-    // user data for database
+    //DEFAULT PHOTO
+    const photo = {
+      data: [],
+      contentType: "",
+    };
+
+    // USER DATA FOR DATABASE
     const userData = {
-      email: email,
+      firstName,
+      lastName,
+      email,
       password: newPassword,
       confirmToken: token,
+      photo,
     };
 
     // save user to database
     const user = new User(userData);
+
     const result = await user.save();
 
     // send email
@@ -48,7 +69,7 @@ const createAUser = async (req, res) => {
         html: `
           <html>
           <body>
-          <h1>Wellcome to grand blog</h1>
+          <h1>Wellcome to Open Mart</h1>
           <a href='http://localhost:5000/api/v1/user/confirm/${token}'>Confirm your email</a>
           </body>
           </html>
@@ -129,6 +150,8 @@ const getUser = async (req, res) => {
       email: user.email,
       phone: user.phone,
       role: user.role,
+      address: user.address,
+      isProfilePhoto: user.isProfilePhoto,
     };
 
     res.status(200).json({
@@ -184,7 +207,7 @@ const userLogIn = async (req, res) => {
     if (!checkPassword) {
       return res.status(400).json({
         status: "fail",
-        messsage: "password don't match",
+        message: "password don't match",
       });
     }
 
@@ -199,6 +222,8 @@ const userLogIn = async (req, res) => {
       email: user.email,
       phone: user.phone,
       role: user.role,
+      address: user.address,
+      isProfilePhoto: user.isProfilePhoto,
     };
 
     res.status(200).json({
@@ -217,4 +242,138 @@ const userLogIn = async (req, res) => {
   }
 };
 
-export { createAUser, confirmUserEmail, getUser, userLogIn };
+const updateUserProfile = async (req, res) => {
+  try {
+    // GET USER DATA
+    const userData = req.body;
+
+    // QUERY
+    const query = {
+      email: userData.email,
+    };
+
+    // FIND USER
+    const user = await User.findOne(query);
+    if (!user) {
+      res.status(400).json({
+        status: "fail",
+        message: "No user found",
+      });
+    }
+
+    // UPDATE USER DATA
+    user.firstName = userData.firstName;
+    user.lastName = userData.lastName;
+    user.phone = userData.phone;
+    user.address = userData.address;
+
+    // UPDATE USER
+    const result = await User.updateOne(query, { $set: user });
+
+    res.status(200).json({
+      status: "success",
+      result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      error: error.message,
+    });
+  }
+};
+
+const getProfilePhoto = async (req, res) => {
+  try {
+    // GET USER EMAIL
+    const email = req.query.email;
+
+    // QUERY
+    const query = {
+      email,
+    };
+
+    // FIND USER
+    const user = await User.findOne(query).select("photo");
+    if (!user) {
+      return res.status(400).json({
+        status: "fail",
+        message: "No user found",
+      });
+    }
+
+    res.set("content-type", user.photo.contentType);
+    res.send(user.photo.data);
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      error: error.message,
+    });
+  }
+};
+
+const updateUserProfilePhoto = async (req, res) => {
+  try {
+    // USER DATA
+    const { photo } = req.files;
+    const email = req.query.email;
+
+    // QUERY
+    const query = {
+      email,
+    };
+
+    // FIND USER
+    const user = await User.findOne(query);
+    if (!user) {
+      return res.status(400).json({
+        status: "fail",
+        message: "No user found",
+      });
+    }
+
+    if (photo) {
+      user.photo.data = fs.readFileSync(photo.path);
+      user.photo.contentType = photo.type;
+    }
+
+    user.isProfilePhoto = true;
+
+    const result = await User.updateOne(query, { $set: user });
+
+    res.status(200).json({
+      status: "success",
+      result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      error: error.message,
+    });
+  }
+};
+
+const getAllUser = async (req, res) => {
+  try {
+    const allUser = await User.find({});
+
+    res.json({
+      allUser,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      error: error.message,
+    });
+  }
+};
+
+export {
+  createAUser,
+  confirmUserEmail,
+  getUser,
+  userLogIn,
+  updateUserProfile,
+  updateUserProfilePhoto,
+  getAllUser,
+  getProfilePhoto,
+};

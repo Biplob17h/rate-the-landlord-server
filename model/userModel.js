@@ -24,16 +24,16 @@ const userSchema = mongoose.Schema(
       unique: [true, "Email alredy in use"],
     },
     phone: {
-      type: Number,
+      type: String,
       // validate: [
       //   validator.isMobilePhone,
       //   "Please provide a valide phone number ",
       // ],
-      default: 0,
+      default: "+880",
     },
     role: {
       type: String,
-      enum: ["user","writer", "admin",],
+      enum: ["user", "writer", "admin"],
       default: "user",
     },
     status: {
@@ -45,11 +45,19 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, "please provide a password"],
     },
-    photoURL: {
-      type: Buffer,
+    address: {
+      type: String,
       default: "",
     },
+    photo: {
+      data: Buffer,
+      contentType: String,
+    },
     confirmToken: String,
+    isProfilePhoto: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timeStamps: true,
