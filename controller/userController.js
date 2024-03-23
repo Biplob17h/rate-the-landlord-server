@@ -6,17 +6,34 @@ import generateToken from "../utils/token.js";
 import getUserByEmail from "../utils/getUserByEmail.js";
 import fs from "fs";
 
+// SIGN UP USER
 const createAUser = async (req, res) => {
   try {
     // GET USER DATA
     const { email, password, firstName, lastName } = req.body;
+
+    // confirm credentials
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        status: "fail",
+        error: "Please provide your credentials",
+      });
+    }
 
     const isEmail = await getUserByEmail(email);
 
     if (isEmail) {
       return res.status(400).json({
         status: "fail",
-        message: "email alredy in use",
+        error: "email alredy in use",
+      });
+    }
+
+    // check password length
+    if (password.length < 5) {
+      return res.status(400).json({
+        status: "fail",
+        error: "password should be five character or more",
       });
     }
 
@@ -29,53 +46,18 @@ const createAUser = async (req, res) => {
 
     const newPassword = await hashPassword(password);
 
-    // GENARTE TOKEN
-    const token = crypto.randomBytes(32).toString("hex");
-
-    //DEFAULT PHOTO
-    const photo = {
-      data: [],
-      contentType: "",
-    };
-
     // USER DATA FOR DATABASE
     const userData = {
       firstName,
       lastName,
       email,
       password: newPassword,
-      confirmToken: token,
-      photo,
     };
 
     // save user to database
     const user = new User(userData);
 
     const result = await user.save();
-
-    // send email
-    const transprot = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_ID,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-    if (result._id) {
-      transprot.sendMail({
-        from: "biplob17h@gmail.com",
-        to: email,
-        subject: "confirm email",
-        html: `
-          <html>
-          <body>
-          <h1>Wellcome to Open Mart</h1>
-          <a href='http://localhost:5000/api/v1/user/confirm/${token}'>Confirm your email</a>
-          </body>
-          </html>
-          `,
-      });
-    }
 
     // send response to client
     res.status(200).json({
@@ -90,82 +72,7 @@ const createAUser = async (req, res) => {
   }
 };
 
-const confirmUserEmail = async (req, res) => {
-  try {
-    // GET TOKEN
-    const confirmToken = req.params?.token;
-
-    // QUERY
-    const query = { confirmToken: confirmToken };
-
-    // FIND USER
-    const user = await User.findOne(query);
-    if (!user) {
-      return res.status(400).json({
-        status: "Failed",
-        message: "Your confirm token is not valid",
-      });
-    }
-
-    user.status = "active";
-    user.confirmToken = "active";
-
-    const result = await User.updateOne(query, { $set: user });
-
-    res.send(`
-    <h1>Your Account Actived SuccessFully</h1>
-    `);
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      error: error.message,
-    });
-  }
-};
-
-const getUser = async (req, res) => {
-  try {
-    // GET USER DATA
-    const user = req.user;
-
-    // CHECK STATUS
-    if (user.status === "blocked") {
-      return res.status(400).json({
-        status: "fail",
-        message: "User is blocked by admin",
-      });
-    }
-    if (user.status === "not-active") {
-      return res.status(400).json({
-        status: "fail",
-        message: "Active your account first",
-      });
-    }
-
-    // USER DATA
-    const userData = {
-      _id: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      address: user.address,
-      isProfilePhoto: user.isProfilePhoto,
-    };
-
-    res.status(200).json({
-      status: "success",
-      userData,
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      error: error.message,
-    });
-  }
-};
-
+// USER LOGIN
 const userLogIn = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -174,7 +81,7 @@ const userLogIn = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         status: "fail",
-        message: "Please provide your credentials",
+        error: "Please provide your credentials",
       });
     }
 
@@ -183,22 +90,7 @@ const userLogIn = async (req, res) => {
     if (!user) {
       return res.status(400).json({
         status: "fail",
-        message: "No user found",
-      });
-    }
-
-    // STAUTS
-    if (user.status === "not-active") {
-      return res.status(400).json({
-        status: "fail",
-        message: "Please active your account first",
-      });
-    }
-
-    if (user.status === "blocked") {
-      return res.status(400).json({
-        status: "fail",
-        message: "You are blocked by admin",
+        error: "No user found",
       });
     }
 
@@ -207,7 +99,7 @@ const userLogIn = async (req, res) => {
     if (!checkPassword) {
       return res.status(400).json({
         status: "fail",
-        message: "password don't match",
+        error: "wrong password",
       });
     }
 
@@ -220,10 +112,7 @@ const userLogIn = async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      phone: user.phone,
       role: user.role,
-      address: user.address,
-      isProfilePhoto: user.isProfilePhoto,
     };
 
     res.status(200).json({
@@ -233,6 +122,68 @@ const userLogIn = async (req, res) => {
         userData,
         token,
       },
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      error: error.message,
+    });
+  }
+};
+
+// SEND USER DATA TO CLIENT SIDE
+const getUser = async (req, res) => {
+  try {
+    // GET USER DATA
+    const user = req.user;
+    const alert = user?.alert;
+
+    // USER DATA
+    let userData = {};
+    if (alert.status) {
+      console.log('hited')
+      // data
+      userData = {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        photo: user.photo,
+        role: user.role,
+        alert: {
+          status: true,
+          res: alert.res,
+          message: alert.message,
+        },
+      };
+
+      // function
+      user.alert = {
+        status: false,
+      };
+
+      const query = {
+        email: user.email,
+      };
+
+      const update = await User.updateOne(query, { $set: user });
+    } else {
+      userData = {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        photo: user.photo,
+        role: user.role,
+        alert: {
+          status: false,
+        },
+      };
+    }
+
+    res.status(200).json({
+      status: "success",
+      userData,
     });
   } catch (error) {
     res.status(400).json({
@@ -257,87 +208,19 @@ const updateUserProfile = async (req, res) => {
     if (!user) {
       res.status(400).json({
         status: "fail",
-        message: "No user found",
+        error: "No user found",
       });
     }
 
     // UPDATE USER DATA
     user.firstName = userData.firstName;
     user.lastName = userData.lastName;
-    user.phone = userData.phone;
-    user.address = userData.address;
+    user.photo = userData.photo;
+    user.higth = userData.higth;
+    user.age = userData.age;
+    user.workTime = userData.workTime;
 
     // UPDATE USER
-    const result = await User.updateOne(query, { $set: user });
-
-    res.status(200).json({
-      status: "success",
-      result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      error: error.message,
-    });
-  }
-};
-
-const getProfilePhoto = async (req, res) => {
-  try {
-    // GET USER EMAIL
-    const email = req.query.email;
-
-    // QUERY
-    const query = {
-      email,
-    };
-
-    // FIND USER
-    const user = await User.findOne(query).select("photo");
-    if (!user) {
-      return res.status(400).json({
-        status: "fail",
-        message: "No user found",
-      });
-    }
-
-    res.set("content-type", user.photo.contentType);
-    res.send(user.photo.data);
-  } catch (error) {
-    res.status(400).json({
-      status: "fail",
-      error: error.message,
-    });
-  }
-};
-
-const updateUserProfilePhoto = async (req, res) => {
-  try {
-    // USER DATA
-    const { photo } = req.files;
-    const email = req.query.email;
-
-    // QUERY
-    const query = {
-      email,
-    };
-
-    // FIND USER
-    const user = await User.findOne(query);
-    if (!user) {
-      return res.status(400).json({
-        status: "fail",
-        message: "No user found",
-      });
-    }
-
-    if (photo) {
-      user.photo.data = fs.readFileSync(photo.path);
-      user.photo.contentType = photo.type;
-    }
-
-    user.isProfilePhoto = true;
-
     const result = await User.updateOne(query, { $set: user });
 
     res.status(200).json({
@@ -367,13 +250,4 @@ const getAllUser = async (req, res) => {
   }
 };
 
-export {
-  createAUser,
-  confirmUserEmail,
-  getUser,
-  userLogIn,
-  updateUserProfile,
-  updateUserProfilePhoto,
-  getAllUser,
-  getProfilePhoto,
-};
+export { createAUser, getUser, userLogIn, updateUserProfile, getAllUser };

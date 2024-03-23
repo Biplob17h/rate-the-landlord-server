@@ -5,6 +5,10 @@ import dotenv from "dotenv";
 import colors from "colors";
 import connectDB from "./config/db.js";
 import userRouter from "./routes/userRoute.js";
+import applicationRouter from "./routes/applicationRoute.js";
+import adminRouter from "./routes/adminRoutes.js";
+import coachRouter from "./routes/coachRoutes.js";
+import bookingRouter from "./routes/bookingRoute.js";
 
 // APP
 const app = express();
@@ -18,16 +22,20 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 // ROUTES
-app.use('/api/v1/user', userRouter)
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/trainer", applicationRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/coach", coachRouter);
+app.use("/api/v1/booking", bookingRouter);
 
 // HOMEPAGE
 app.get("/", (req, res) => {
-  res.send(`<h1>Wellcome to blog page server</h1>`);
+  res.send(`<h1>Wellcome to Gym server Homepage</h1>`);
 });
 
 // LISTEN
 const port = process.env.PORT || 8080;
-connectDB()
+connectDB();
 app.listen(port, () => {
-  console.log(`server is running on port ${port}`.green.bgWhite.bold);
+  console.log(`server is running on port ${port}`.cyan.bold);
 });

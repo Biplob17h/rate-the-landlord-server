@@ -3,7 +3,15 @@ import { promisify } from "util";
 import User from "../model/userModel.js";
 const verifyUser = async (req, res, next) => {
   try {
-    const token = req.headers?.authorisation.split(" ")[1];
+    console.log('hitrd')
+    // get token 
+    const token = await req.headers?.authorization?.split(" ")[1];
+    if (!token) {
+      return res.json({
+        status: "fail",
+        error: "authentication error Please re login",
+      });
+    }
 
     const decode = await promisify(jwt.verify)(
       token,
