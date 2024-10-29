@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import colors from "colors";
 import connectDB from "./db/db.js";
 import reviewRoute from "./routes/reviewRoutes.js";
-import adminRoute from "./routes/AdminRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -17,7 +16,6 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
-app.use('/api/v1/admin', adminRoute)
 app.use('/api/v1/review', reviewRoute)
 
 // Home route
