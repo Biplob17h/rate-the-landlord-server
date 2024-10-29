@@ -1,5 +1,5 @@
 {
-  "name": "gym-server",
+  "name": "rate_the_landlord_server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,16 +13,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-formidable": "^1.2.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.1.0",
-    "morgan": "^1.10.0",
-    "nodemailer": "^6.9.8",
-    "validator": "^13.11.0"
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "mongoose": "^8.7.2"
   }
 }
