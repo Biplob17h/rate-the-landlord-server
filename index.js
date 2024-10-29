@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import colors from "colors";
 import connectDB from "./db/db.js";
 import reviewRoute from "./routes/reviewRoutes.js";
+import reportRoute from "./routes/reportRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(cors());
 
 // Routes
 app.use('/api/v1/review', reviewRoute)
+app.use('/api/v1/report', reportRoute)
 
 // Home route
 app.get("/", (req, res) => {
