@@ -4,27 +4,27 @@ const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const admin = await Admin.findOne({ email: email });
+    const admin = await Admin.findOne({ email });
     if (!admin) {
       return res.status(404).json({
         status: "fail",
         message: "Admin not found",
       });
     }
-    const adminPassword = admin.password;
-    if (adminPassword !== password) {
+
+    if (admin.password !== password) {
       return res.status(401).json({
         status: "fail",
-        message: "Invalid password",
+        message: "Incorrect password",
       });
     }
-    res.json({
+    res.status(200).json({
       status: "success",
-      message: "Admin logged in successfully",
+      message: "Logged in successfully",
       data: admin,
     });
   } catch (error) {
-    res.status(404).json({
+    res.status(400).json({
       status: "fail",
       message: error.message,
     });

@@ -109,7 +109,6 @@ const getAllReviewsBySort = async (req, res) => {
       default:
         break;
     }
-    console.log(query);
 
     // Fetch reviews with applied query and sort conditions
     const reviews = await Review.find(query).sort(sortQuery);
@@ -164,6 +163,44 @@ const getAllReviewsByLocation = async (req, res) => {
     });
   }
 };
+const getAllLandlordByName = async (req, res) => {
+  try {
+    const { landlordName } = req.query;
+
+    if (!landlordName) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Location query parameter is required.",
+      });
+    }
+
+    // Case-insensitive search for matching location
+    const query = { landlordName: { $regex: new RegExp(landlordName, "i") } };
+    const reviews = await Review.find(query);
+
+    // Filter out duplicate locations
+    const uniqueReviews = [];
+    const locationMap = new Map();
+
+    for (const review of reviews) {
+      if (!locationMap.has(review.location)) {
+        locationMap.set(review.location, true); // Track location
+        uniqueReviews.push(review); // Add unique location review
+      }
+    }
+
+    res.json({
+      status: "success",
+      results: uniqueReviews.length,
+      data: uniqueReviews,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
 
 
 export {
@@ -172,4 +209,5 @@ export {
   getAllReviewsBySort,
   getAllReviewsByLocation,
   getAllReviewByLocation,
+  getAllLandlordByName
 };
