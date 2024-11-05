@@ -28,37 +28,12 @@ const reviewSchema = new mongoose.Schema({
     required: true,
     default: "",
   },
-  rent: {
-    type: Number,
+  street: {
+    type: String,
     required: true,
-    default: 0,
+    default: "",
   },
-  repairRating: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  healthRating: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  rentalRating: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  privacyRating: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  respectRating: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  totalRating: {
+  rating: {
     type: Number,
     required: true,
     default: 0,

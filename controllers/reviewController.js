@@ -202,12 +202,11 @@ const getAllLandlordByName = async (req, res) => {
   }
 };
 
-
 export {
   createAReview,
   getAReview,
   getAllReviewsBySort,
   getAllReviewsByLocation,
   getAllReviewByLocation,
-  getAllLandlordByName
+  getAllLandlordByName,
 };
