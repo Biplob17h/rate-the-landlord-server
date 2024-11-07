@@ -10,27 +10,22 @@ const reviewSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    required: true,
     default: "",
   },
   city: {
     type: String,
-    required: true,
     default: "",
   },
   state: {
     type: String,
-    required: true,
     default: "",
   },
   zipCode: {
     type: String,
-    required: true,
     default: "",
   },
   street: {
     type: String,
-    required: true,
     default: "",
   },
   rating: {
@@ -40,7 +35,6 @@ const reviewSchema = new mongoose.Schema({
   },
   review: {
     type: String,
-    required: true,
     default: "",
   },
   markAsRead: {
