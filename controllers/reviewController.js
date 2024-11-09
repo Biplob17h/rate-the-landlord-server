@@ -178,13 +178,13 @@ const getAllLandlordByName = async (req, res) => {
     const query = { landlordName: { $regex: new RegExp(landlordName, "i") } };
     const reviews = await Review.find(query);
 
-    // Filter out duplicate locations
+    // Filter out duplicate Names
     const uniqueReviews = [];
     const locationMap = new Map();
 
     for (const review of reviews) {
-      if (!locationMap.has(review.location)) {
-        locationMap.set(review.location, true); // Track location
+      if (!locationMap.has(review.landlordName)) {
+        locationMap.set(review.landlordName, true); // Track location
         uniqueReviews.push(review); // Add unique location review
       }
     }
