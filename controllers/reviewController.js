@@ -61,61 +61,66 @@ const getAllReviewByLocation = async (req, res) => {
 
 const getAllReviewsBySort = async (req, res) => {
   try {
-    const { landlord, sort, country, state, city, zip, location } = req.query;
+    const { landlord, sort, location } = req.query;
     let query = {};
 
     // Apply filters to the query
     if (landlord) {
       query.landlordName = { $regex: new RegExp(landlord, "i") }; // Case-insensitive search
     }
-
-    if (country) {
-      query.country = country;
-    }
-    if (state) {
-      query.state = state;
-    }
-    if (city) {
-      query.city = city;
-    }
-    if (zip) {
-      query.zipCode = zip;
+    if (location) {
+      query.location = { $regex: new RegExp(location, "i") }; // Case-insensitive search
     }
 
     // Apply sorting logic
     let sortQuery = {};
-    switch (sort) {
-      case "":
-        sortQuery.date = -1;
-        break;
-      case "newest":
-        sortQuery.date = -1;
-        break;
-      case "oldest":
-        sortQuery.date = 1;
-        break;
-      case "a to z":
-        sortQuery.landlordName = 1;
-        break;
-      case "z to a":
-        sortQuery.landlordName = -1;
-        break;
-      case "highest":
-        sortQuery.totalRating = -1;
-        break;
-      case "lowest":
-        sortQuery.totalRating = 1;
-        break;
-      default:
-        break;
+    if (!sort || sort === "newest") {
+      // Default sort by date (newest first)
+      sortQuery = { date: -1 };
+    } else if (sort === "oldest") {
+      sortQuery = { date: 1 };
+    } else if (sort === "a to z") {
+      sortQuery = { landlordName: 1 }; // Ascending order by landlordName
+    } else if (sort === "z to a") {
+      sortQuery = { landlordName: -1 }; // Descending order by landlordName
+    } else if (sort === "highest") {
+      sortQuery = { totalRating: -1 }; // Descending order by rating
+    } else if (sort === "lowest") {
+      sortQuery = { totalRating: 1 }; // Ascending order by rating
     }
 
     // Fetch reviews with applied query and sort conditions
     const reviews = await Review.find(query).sort(sortQuery);
     res.json({
       status: "success",
-      results: reviews?.length,
+      results: reviews.length,
       data: reviews,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
+
+
+const getAllReviewsOfALandlordById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // get the landlord
+    const review = await Review.findById({ _id: id });
+    const landlord = review.landlordName;
+
+    // get all reviews by the landlord
+    const allReviews = await Review.find({ landlordName: landlord });
+
+    res.json({
+      status: "success",
+      results: allReviews?.length,
+      data: allReviews,
+      review
     });
   } catch (error) {
     res.status(400).json({
@@ -209,4 +214,5 @@ export {
   getAllReviewsByLocation,
   getAllReviewByLocation,
   getAllLandlordByName,
+  getAllReviewsOfALandlordById,
 };

@@ -8,30 +8,6 @@ const reviewSchema = new mongoose.Schema({
     upperCase: true,
     trim: true,
   },
-  country: {
-    type: String,
-    default: "",
-  },
-  district: {
-    type: String,
-    default: "",
-  },
-  city: {
-    type: String,
-    default: "",
-  },
-  state: {
-    type: String,
-    default: "",
-  },
-  zipCode: {
-    type: String,
-    default: "",
-  },
-  street: {
-    type: String,
-    default: "",
-  },
   rating: {
     type: Number,
     required: true,
