@@ -61,7 +61,7 @@ const getAllReviewByLocation = async (req, res) => {
 
 const getAllReviewsBySort = async (req, res) => {
   try {
-    const { landlord, sort, location } = req.query;
+    const { landlord, sort, location, city, state } = req.query;
     let query = {};
 
     // Apply filters to the query
@@ -70,6 +70,12 @@ const getAllReviewsBySort = async (req, res) => {
     }
     if (location) {
       query.location = { $regex: new RegExp(location, "i") }; // Case-insensitive search
+    }
+    if (city) {
+      query.city = { $regex: new RegExp(city, "i") }; // Case-insensitive search
+    }
+    if (state) {
+      query.state = { $regex: new RegExp(state, "i") }; // Case-insensitive search
     }
 
     // Apply sorting logic
@@ -104,7 +110,6 @@ const getAllReviewsBySort = async (req, res) => {
   }
 };
 
-
 const getAllReviewsOfALandlordById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -120,7 +125,7 @@ const getAllReviewsOfALandlordById = async (req, res) => {
       status: "success",
       results: allReviews?.length,
       data: allReviews,
-      review
+      review,
     });
   } catch (error) {
     res.status(400).json({
