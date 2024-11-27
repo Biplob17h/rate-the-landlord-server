@@ -32,7 +32,7 @@ app.post("/api/v1/verify-turnstile", async (req, res) => {
   }
 
   try {
-    const secretKey = process.env.TURNSTILE_SECRET_KEY; // Add your Turnstile secret key to .env
+    const secretKey = process.env.TURNSTILE_SECRET_KEY; // Ensure this is set
     const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,13 +47,18 @@ app.post("/api/v1/verify-turnstile", async (req, res) => {
     if (data.success) {
       return res.status(200).json({ message: "Token is valid." });
     } else {
-      return res.status(400).json({ message: "Token is invalid.", errors: data["error-codes"] });
+      console.error("Turnstile verification failed:", data["error-codes"]);
+      return res.status(400).json({
+        message: "Token is invalid.",
+        errors: data["error-codes"], // Add error codes for debugging
+      });
     }
   } catch (error) {
-    console.error("Error verifying Turnstile token:", error);
-    res.status(500).json({ message: "Internal server error." });
+    console.error("Error verifying Turnstile token:", error.message);
+    return res.status(500).json({ message: "Internal server error." });
   }
 });
+
 
 // Home route
 app.get("/", (req, res) => {
