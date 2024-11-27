@@ -62,6 +62,7 @@ const getAllReviewByLocation = async (req, res) => {
 const getAllReviewsBySort = async (req, res) => {
   try {
     const { landlord, sort, location, city, state } = req.query;
+    console.log(req.query)
     let query = {};
 
     // Apply filters to the query
