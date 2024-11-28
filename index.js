@@ -7,6 +7,7 @@ import reviewRoute from "./routes/reviewRoutes.js";
 import reportRoute from "./routes/reportRoutes.js";
 import adminRoute from "./routes/adminRoutes.js";
 import fetch from "node-fetch"; // Required to call external APIs
+import resourceRouter from "./routes/resourceRoutes.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -22,6 +23,7 @@ app.use(cors());
 app.use("/api/v1/review", reviewRoute);
 app.use("/api/v1/report", reportRoute);
 app.use("/api/v1/admin", adminRoute);
+app.use("/api/v1/resource", resourceRouter);
 
 // Verify Turnstile token route
 app.post("/api/v1/verify-turnstile", async (req, res) => {

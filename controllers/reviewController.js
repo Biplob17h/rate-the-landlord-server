@@ -62,7 +62,6 @@ const getAllReviewByLocation = async (req, res) => {
 const getAllReviewsBySort = async (req, res) => {
   try {
     const { landlord, sort, location, city, state } = req.query;
-    console.log(req.query)
     let query = {};
 
     // Apply filters to the query
@@ -213,6 +212,34 @@ const getAllLandlordByName = async (req, res) => {
   }
 };
 
+const updateAReview = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const updatedReview = await Review.findByIdAndUpdate(
+      { _id: id },
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedReview) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Review not found",
+      });
+    }
+    res.json({
+      status: "success",
+      data: updatedReview,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
+
 export {
   createAReview,
   getAReview,
@@ -221,4 +248,5 @@ export {
   getAllReviewByLocation,
   getAllLandlordByName,
   getAllReviewsOfALandlordById,
+  updateAReview,
 };

@@ -31,4 +31,35 @@ const adminLogin = async (req, res) => {
   }
 };
 
-export { adminLogin };
+const updateAdmin = async (req, res, next) => {
+  try {
+    const admin = await Admin.findByIdAndUpdate(
+      { _id: req.params.id },
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!admin) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Admin not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Admin updated successfully",
+      data: admin,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
+
+export { adminLogin, updateAdmin };

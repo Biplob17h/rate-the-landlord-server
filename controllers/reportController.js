@@ -36,19 +36,29 @@ const getAReport = async (req, res) => {
 
 const getAllReports = async (req, res) => {
   try {
-    const { markAsRead } = req.query;
-    let query = {};
-    if (markAsRead === "true") {
-      query = { markAsRead: true };
-    }
-    if (markAsRead === "false") {
-      query = { markAsRead: false };
-    }
-    const reports = await Report.find(query);
+    // Fetch reports and resolve to plain JavaScript objects
+    const reports = await Report.find({}).populate("review").lean();
+
+    // Update reports that are unread
+    await Report.updateMany({ markAsRead: false }, { markAsRead: true });
 
     res.status(200).json({
       status: "success",
-      results: reports.length,
+      data: reports, // Plain objects now
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
+
+const getUnreadReports = async (req, res) => {
+  try {
+    const reports = await Report.find({ markAsRead: false });
+    res.status(200).json({
+      status: "success",
       data: reports,
     });
   } catch (error) {
@@ -63,8 +73,17 @@ const deleteAReport = async (req, res) => {
   try {
     const { id } = req.params;
     const report = await Report.findByIdAndDelete({ _id: id });
-    res.status(204).json({
+
+    if (!report) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Report not found",
+      });
+    }
+
+    res.status(200).json({
       status: "success",
+      message: "Report deleted successfully",
       data: report,
     });
   } catch (error) {
@@ -75,4 +94,10 @@ const deleteAReport = async (req, res) => {
   }
 };
 
-export { createAReport, getAReport, getAllReports, deleteAReport };
+export {
+  createAReport,
+  getAReport,
+  getAllReports,
+  deleteAReport,
+  getUnreadReports,
+};
