@@ -1,5 +1,5 @@
 import express from "express";
-import { createAReview, getAllLandlordByName, getAllReviewByLocation, getAllReviewsByLocation, getAllReviewsBySort, getAllReviewsOfALandlordById, getAReview, updateAReview } from "../controllers/reviewController.js";
+import { createAReview, getAllLandlordByName, getAllReviewByLocation, getAllReviewsByLocation, getAllReviewsBySort, getAllReviewsOfALandlordById, getAReview, updateAReview, deleteAReview } from "../controllers/reviewController.js";
 
 const reviewRoute = express.Router();
 
@@ -16,6 +16,8 @@ reviewRoute.get("/all/landlord/:id", getAllReviewsOfALandlordById);
 
 
 reviewRoute.put("/update", updateAReview);
+
+reviewRoute.delete("/delete/:id", deleteAReview);
 
 
 export default reviewRoute;

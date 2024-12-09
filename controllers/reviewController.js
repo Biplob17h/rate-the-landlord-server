@@ -240,6 +240,15 @@ const updateAReview = async (req, res) => {
   }
 };
 
+const deleteAReview = async (req, res) => {
+  const id = req.params.id;
+  const review = await Review.findByIdAndDelete({ _id: id });
+  res.json({
+    status: "success",
+    message: "Review deleted successfully",
+  });
+};
+
 export {
   createAReview,
   getAReview,
@@ -249,4 +258,5 @@ export {
   getAllLandlordByName,
   getAllReviewsOfALandlordById,
   updateAReview,
+  deleteAReview,
 };
