@@ -2,8 +2,8 @@ import Report from "../models/reportModel.js";
 
 const createAReport = async (req, res) => {
   try {
-    const { review, report } = req.body;
-    const reportData = await Report({ review, report });
+    const { review, report, } = req.body;
+    const reportData = await Report({ review, report,  });
     const result = await reportData.save();
     res.status(201).json({
       status: "success",
