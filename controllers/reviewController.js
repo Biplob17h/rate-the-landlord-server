@@ -82,17 +82,17 @@ const getAllReviewsBySort = async (req, res) => {
     let sortQuery = {};
     if (!sort || sort === "newest") {
       // Default sort by date (newest first)
-      sortQuery = { date: -1 };
+      sortQuery = { time: -1 };
     } else if (sort === "oldest") {
-      sortQuery = { date: 1 };
+      sortQuery = { time: 1 };
     } else if (sort === "a to z") {
       sortQuery = { landlordName: 1 }; // Ascending order by landlordName
     } else if (sort === "z to a") {
       sortQuery = { landlordName: -1 }; // Descending order by landlordName
     } else if (sort === "highest") {
-      sortQuery = { totalRating: -1 }; // Descending order by rating
+      sortQuery = { rating: -1 }; // Descending order by rating
     } else if (sort === "lowest") {
-      sortQuery = { totalRating: 1 }; // Ascending order by rating
+      sortQuery = { rating: 1 }; // Ascending order by rating
     }
 
     // Fetch reviews with applied query and sort conditions
