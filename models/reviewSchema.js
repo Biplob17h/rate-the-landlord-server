@@ -1,47 +1,40 @@
 import mongoose from "mongoose";
 
-const reviewSchema = new mongoose.Schema({
-  landlordName: {
-    type: String,
-    required: true,
-    default: "",
-    upperCase: true,
-    trim: true,
+const reviewSchema = new mongoose.Schema(
+  {
+    landlordName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    review: {
+      type: String,
+      default: "",
+    },
+    markAsRead: {
+      type: Boolean,
+      default: false,
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    city: {
+      type: String,
+      default: "",
+    },
+    state: {
+      type: String,
+      default: "",
+    },
   },
-  rating: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  review: {
-    type: String,
-    default: "",
-  },
-  markAsRead: {
-    type: Boolean,
-    default: false,
-  },
-  location: {
-    type: String,
-    default: "",
-  },
-  city: {
-    type: String,
-    default: "",
-  },
-  state: {
-    type: String,
-    default: "",
-  },
-  date: {
-    type: String,
-    default: "",
-  },
-  time: {
-    type: Date,
-    default: Date.now(),
-  },
-});
+  { timestamps: true } // Enable createdAt and updatedAt fields
+);
 
 const Review = mongoose.model("reviews", reviewSchema);
 

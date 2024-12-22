@@ -42,10 +42,54 @@ const getAReview = async (req, res) => {
 const getAllReviewByLocation = async (req, res) => {
   try {
     const id = req.params.id;
+    const { landlord, sort, country, state, city, zipCode } = JSON.parse(
+      req.headers.search
+    );
+
     const review = await Review.findOne({ _id: id });
     const location = review.location;
 
-    const allReviews = await Review.find({ location });
+    let query = {};
+
+    // Apply filters to the query
+    if (landlord) {
+      query.landlordName = { $regex: new RegExp(landlord, "i") }; // Case-insensitive search
+    }
+    if (location) {
+      query.location = { $regex: new RegExp(location, "i") }; // Case-insensitive search
+    }
+    if (city) {
+      query.city = { $regex: new RegExp(city, "i") }; // Case-insensitive search
+    }
+    if (state) {
+      query.state = { $regex: new RegExp(state, "i") }; // Case-insensitive search
+    }
+
+    // Apply sorting logic
+    let sortQuery = {};
+    switch (sort) {
+      case "oldest":
+        sortQuery = { createdAt: 1 }; // Ascending order (oldest first)
+        break;
+      case "a to z":
+        sortQuery = { landlordName: 1 }; // Alphabetical order (A-Z)
+        break;
+      case "z to a":
+        sortQuery = { landlordName: -1 }; // Reverse alphabetical order (Z-A)
+        break;
+      case "highest":
+        sortQuery = { rating: -1 }; // Highest rating first
+        break;
+      case "lowest":
+        sortQuery = { rating: 1 }; // Lowest rating first
+        break;
+      default:
+        // Default to newest first if no sort is specified or invalid sort value
+        sortQuery = { createdAt: -1 };
+        break;
+    }
+
+    const allReviews = await Review.find({ location }).sort(sortQuery);
 
     res.status(200).json({
       status: "success",
@@ -80,24 +124,32 @@ const getAllReviewsBySort = async (req, res) => {
 
     // Apply sorting logic
     let sortQuery = {};
-    if (!sort || sort === "newest") {
-      // Default sort by date (newest first)
-      sortQuery = { time: -1 };
-    } else if (sort === "oldest") {
-      sortQuery = { time: 1 };
-    } else if (sort === "a to z") {
-      sortQuery = { landlordName: 1 }; // Ascending order by landlordName
-    } else if (sort === "z to a") {
-      sortQuery = { landlordName: -1 }; // Descending order by landlordName
-    } else if (sort === "highest") {
-      sortQuery = { rating: -1 }; // Descending order by rating
-    } else if (sort === "lowest") {
-      sortQuery = { rating: 1 }; // Ascending order by rating
+    switch (sort) {
+      case "oldest":
+        sortQuery = { createdAt: 1 }; // Ascending order (oldest first)
+        break;
+      case "a to z":
+        sortQuery = { landlordName: 1 }; // Alphabetical order (A-Z)
+        break;
+      case "z to a":
+        sortQuery = { landlordName: -1 }; // Reverse alphabetical order (Z-A)
+        break;
+      case "highest":
+        sortQuery = { rating: -1 }; // Highest rating first
+        break;
+      case "lowest":
+        sortQuery = { rating: 1 }; // Lowest rating first
+        break;
+      default:
+        // Default to newest first if no sort is specified or invalid sort value
+        sortQuery = { createdAt: -1 };
+        break;
     }
 
     // Fetch reviews with applied query and sort conditions
     const reviews = await Review.find(query).sort(sortQuery);
-    res.json({
+
+    res.status(200).json({
       status: "success",
       results: reviews.length,
       data: reviews,
@@ -114,12 +166,59 @@ const getAllReviewsOfALandlordById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // get the landlord
-    const review = await Review.findById({ _id: id });
-    const landlord = review.landlordName;
+    const { landlord, sort, country, state, city, zipCode, location } = JSON.parse(
+      req.headers.search
+    );
 
+    // get the landlord
+    const review = await Review.findById(id);
+    if (!review) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Review not found",
+      });
+    }
+    const landlordName = review.landlordName;
+
+    let query = { landlordName };
+
+    // Apply filters to the query
+    if (location) {
+      query.location = { $regex: new RegExp(location, "i") }; // Case-insensitive search
+    }
+    if (city) {
+      query.city = { $regex: new RegExp(city, "i") }; // Case-insensitive search
+    }
+    if (state) {
+      query.state = { $regex: new RegExp(state, "i") }; // Case-insensitive search
+    }
+
+    // Apply sorting logic
+    let sortQuery = {};
+    switch (sort) {
+      case "oldest":
+        sortQuery = { createdAt: 1 }; // Ascending order (oldest first)
+        break;
+      case "a to z":
+        sortQuery = { landlordName: 1 }; // Alphabetical order (A-Z)
+        break;
+      case "z to a":
+        sortQuery = { landlordName: -1 }; // Reverse alphabetical order (Z-A)
+        break;
+      case "highest":
+        sortQuery = { rating: -1 }; // Highest rating first
+        break;
+      case "lowest":
+        sortQuery = { rating: 1 }; // Lowest rating first
+        break;
+      default:
+        // Default to newest first if no sort is specified or invalid sort value
+        sortQuery = { createdAt: -1 };
+        break;
+    }
+    
     // get all reviews by the landlord
-    const allReviews = await Review.find({ landlordName: landlord });
+    const allReviews = await Review.find(query).sort(sortQuery);
 
     res.json({
       status: "success",
